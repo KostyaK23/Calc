@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор размера позиции</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Общие стили для контейнера калькулятора */
+        body {
+            font-family: 'Inter', sans-serif; /* Используем шрифт Inter */
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f8f8; /* Легкий фон */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Минимальная высота для центрирования */
+        }
+
+        .calculator-container {
+            background-color: #ffffff; /* Белый фон калькулятора */
+            padding: 25px;
+            border-radius: 12px; /* Скругленные углы */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Мягкая тень */
+            max-width: 400px; /* Максимальная ширина */
+            width: 100%; /* Занимает всю доступную ширину */
+            box-sizing: border-box; /* Учитываем padding в ширине */
+        }
+
+        h2 {
+            text-align: left; /* Заголовок слева */
+            color: #333333;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+
+        h2 .info-icon {
+            font-size: 0.7em;
+            color: #888888;
+            margin-left: 8px;
+            cursor: help;
+            text-decoration: none; /* Убираем подчеркивание */
+        }
+
+        /* Группа ввода (лейбл + поле ввода) */
+        .input-group {
+            margin-bottom: 18px; /* Отступ между группами */
+            display: flex; /* Flexbox для выравнивания лейбла и поля */
+            align-items: center; /* Выравнивание по центру */
+        }
+
+        .input-group label {
+            flex: 1; /* Лейбл занимает доступное пространство */
+            color: #555555;
+            font-size: 0.95em;
+            margin-right: 15px; /* Отступ между лейблом и полем */
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group select {
+            flex: 2; /* Поле ввода занимает больше места */
+            padding: 10px 12px;
+            border: 1px solid #dddddd;
+            border-radius: 8px; /* Скругленные углы у полей ввода */
+            font-size: 1em;
+            color: #333333;
+            box-sizing: border-box;
+            max-width: 150px; /* Максимальная ширина для полей ввода справа */
+        }
+
+        .input-group input[type="number"] {
+            /* Стрелки для number-полей скрываем, чтобы не нарушать дизайн, если нужно */
+            -moz-appearance: textfield;
+        }
+        .input-group input[type="number"]::-webkit-outer-spin-button,
+        .input-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-group .percentage-sign {
+            margin-left: 8px; /* Отступ для знака процента */
+            color: #555555;
+        }
+
+        /* Кнопки */
+        .buttons {
+            display: flex;
+            justify-content: space-between; /* Распределение кнопок */
+            margin-top: 30px;
+            margin-bottom: 30px;
+            gap: 15px; /* Промежуток между кнопками */
+        }
+
+        .buttons button {
+            flex: 1; /* Кнопки занимают равное пространство */
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px; /* Скругленные углы у кнопок */
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Легкая тень для кнопок */
+        }
+
+        .buttons .clear-button {
+            background-color: #e0e0e0;
+            color: #555555;
+        }
+
+        .buttons .clear-button:hover {
+            background-color: #d0d0d0;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .buttons .calculate-button {
+            background-color: #4CAF50; /* Зеленый цвет для Calculate */
+            color: white;
+        }
+
+        .buttons .calculate-button:hover {
+            background-color: #45a049;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Результаты */
+        .result-group {
+            border-top: 1px solid #eeeeee; /* Разделитель */
+            padding-top: 25px;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-item label {
+            flex: 1;
+            color: #555555;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        .result-item span {
+            flex: 2;
+            color: #333333;
+            font-size: 1.1em;
+            font-weight: 600;
+            max-width: 150px;
+            text-align: right; /* Выравнивание результатов вправо */
+        }
+
+        /* Уведомления/модальное окно вместо alert() */
+        .message-box {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .message-box-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 80%; /* Could be more responsive */
+            max-width: 300px;
+            text-align: center;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h2>КАЛЬКУЛЯТОР РОЗМІРУ ПОЗИЦІЇ <a href="#" class="info-icon" onclick="showMessage('Калькулятор розміру позиції допомагає визначити, скільки лотів (або одиниць) валюти вам слід купити або продати, щоб мінімізувати ризик, виходячи з вашого балансу рахунку, відсотка ризику, стоп-лосу та вартості пункту. \\n\\nВажливо: Переконайтеся, що ви вводите правильне &quot;Значення пункту&quot; для вашої валютної пари та розміру лота. Ви можете знайти цю інформацію у свого брокера або використовувати онлайн-калькулятори вартості пункту.')">?</a></h2>
+
+        <div class="input-group">
+            <label for="accountCurrency">Валюта рахунку</label>
+            <input type="text" id="accountCurrency" value="USD - Долар США" readonly>
+        </div>
+        <div class="input-group">
+            <label for="accountBalance">Баланс рахунку</label>
+            <input type="number" id="accountBalance" placeholder="10000" step="any" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="percentageRisk">Відсоток ризику</label>
+            <input type="number" id="percentageRisk" placeholder="1" step="any" oninput="calculate()">
+            <span class="percentage-sign">%</span>
+        </div>
+        <div class="input-group">
+            <label for="stopLossPips">Стоп-лос у пунктах</label>
+            <input type="number" id="stopLossPips" placeholder="30" step="any" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="currencyPair">Валютна пара</l
+            abel>
+            <input type="text" id="currencyPair" value="EUR/USD" placeholder="EUR/USD" oninput="calculate()">
+        </div>
+        <!-- Нове поле для ручного ввода стоимости пункта -->
+        <div class="input-group">
+            <label for="pipValuePerStandardLot">Значення пункту (для 1 лота)</label>
+            <input type="number" id="pipValuePerStandardLot" placeholder="10" step="any" oninput="calculate()">
+        </div>
+
+        <div class="buttons">
+            <button class="clear-button" onclick="clearForm()">Очистити</button>
+            <button class="calculate-button" onclick="calculate()">Розрахувати</button>
+        </div>
+
+        <div class="result-group">
+            <div class="result-item">
+                <label>Ризик грошима</label>
+                <span id="cashRisk"></span>
+            </div>
+            <div class="result-item">
+                <label>Розмір позиції</label>
+                <span id="positionSize"></span>
+            </div>
+            <div class="result-item">
+                <label>Стандартні лоти</label>
+                <span id="standardLots"></span>
+            </div>
+            <div class="result-item">
+                <label>Міні-лоти</label>
+                <span id="miniLots"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box -->
+    <div id="messageBox" class="message-box">
+        <div class="message-box-content">
+            <span class="close-button" onclick="closeMessageBox()">&times;</span>
+            <p id="messageText"></p>
+        </div>
+    </div>
+
+    <script>
+        // Функция для отображения кастомного сообщения (вместо alert)
+        function showMessage(message) {
+            document.getElementById('messageText').innerText = message;
+            document.getElementById('messageBox').style.display = 'flex';
+        }
+
+        // Функция для закрытия кастомного сообщения
+        function closeMessageBox() {
+            document.getElementById('messageBox').style.display = 'none';
+        }
+
+        // Вспомогательная функция для очистки полей результатов
+        function clearResults() {
+            document.getElementById('cashRisk').innerText = '';
+            document.getElementById('positionSize').innerText = '';
+            document.getElementById('standardLots').innerText = '';
+            document.getElementById('miniLots').innerText = '';
+        }
+
+        function calculate() {
+            const accountBalanceInput = document.getElementById('accountBalance');
+            const percentageRiskInput = document.getElementById('percentageRisk');
+            const stopLossPipsInput = document.getElementById('stopLossPips');
+            const currencyPairInput = document.getElementById('currencyPair');
+            const pipValuePerStandardLotInput = document.getElementById('pipValuePerStandardLot');
+
+            // Проверяем, пусты ли значения входных полей. Если да, очищаем результаты и выходим.
+            // Теперь проверяем, является ли значение поля пустым СТРОКОЙ
+            if (accountBalanceInput.value.trim() === '' || percentageRiskInput.value.trim() === '' || 
+                stopLossPipsInput.value.trim() === '' || pipValuePerStandardLotInput.value.trim() === '') {
+                clearResults();
+                return;
+            }
+
+            const accountBalance = parseFloat(accountBalanceInput.value);
+            const percentageRisk = parseFloat(percentageRiskInput.value);
+            const stopLossPips = parseFloat(stopLossPipsInput.value);
+            const currencyPair = currencyPairInput.value.toUpperCase().trim();
+            const pipValuePerStandardLot = parseFloat(pipValuePerStandardLotInput.value);
+
+            // Теперь проверяем на валидность чисел после парсинга
+            if (isNaN(accountBalance) || accountBalance <= 0) {
+                showMessage("Будь ласка, введіть коректний баланс рахунку (> 0).");
+                clearResults(); // Очищаем результаты при ошибке
+                return;
+            }
+            if (isNaN(percentageRisk) || percentageRisk <= 0 || percentageRisk > 100) {
+                showMessage("Будь ласка, введіть коректний відсоток ризику (від 0.01 до 100).");
+                clearResults();
+                return;
+            }
+            if (isNaN(stopLossPips) || stopLossPips <= 0) {
+                showMessage("Будь ласка, введіть коректне значення стоп-лосу у пунктах (> 0).");
+                clearResults();
+                return;
+            }
+            if (!currencyPair) { // Это поле должно быть пустым, если пользователь удалил
+                showMessage("Будь ласка, вкажіть валютну пару.");
+                clearResults();
+                return;
+            }
+            if (isNaN(pipValuePerStandardLot) || pipValuePerStandardLot <= 0) {
+                showMessage("Будь ласка, введіть коректне значення пункту (для 1 лота) (> 0).");
+                clearResults();
+                return;
+            }
+
+            // Расчеты
+            const cashRisk = accountBalance * (percentageRisk / 100);
+            
+            const positionSizeUnits = (cashRisk / pipValuePerStandardLot) * 100000 / stopLossPips;
+
+            const standardLots = positionSizeUnits / 100000;
+            const miniLots = positionSizeUnits / 10000;
+
+            // Отображение результатов
+            document.getElementById('cashRisk').innerText = `$${cashRisk.toFixed(2)}`;
+            document.getElementById('positionSize').innerText = `${positionSizeUnits.toFixed(2)} одиниць`;
+            document.getElementById('standardLots').innerText = standardLots.toFixed(4);
+            document.getElementById('miniLots').innerText = miniLots.toFixed(4);
+        }
+
+        function clearForm() {
+            document.getElementById('accountBalance').value = '';
+            document.getElementById('percentageRisk').value = '';
+            document.getElementById('stopLossPips').value = '';
+            document.getElementById('currencyPair').value = ''; // Теперь это поле тоже полностью очищается
+            document.getElementById('pipValuePerStandardLot').value = '';
+
+            clearResults(); // Используем новую функцию для очистки результатов
+        }
+
+        // Устанавливаем значения по умолчанию при загрузке страницы
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('accountBalance').value = '10000';
+            document.getElementById('percentageRisk').value = '1';
+            document.getElementById('stopLossPips').value = '30';
+            document.getElementById('pipValuePerStandardLot').value = '10'; 
+            document.getElementById('currencyPair').value = 'EUR/USD';
+            // Добавляем event listeners для полей ввода, чтобы расчет происходил при изменении любого поля.
+            // Это также вызывает calculate() и, следовательно, clearResults() при очистке поля.
+            document.getElementById('accountBalance').addEventListener('input', calculate);
+            document.getElementById('percentageRisk').addEventListener('input', calculate);
+            document.getElementById('stopLossPips').addEventListener('input', calculate);
+            document.getElementById('currencyPair').addEventListener('input', calculate);
+            document.getElementById('pipValuePerStandardLot').addEventListener('input', calculate);
+
+            calculate(); // Выполняем расчет при загрузке с дефолтными значениями
+        });
+    </script>
+</body>
+</html>
